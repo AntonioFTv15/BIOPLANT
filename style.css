@@ -261,7 +261,7 @@ img {
 .hero {
     height: 100vh;
     min-height: 700px;
-    background-image: url('https://images.unsplash.com/photo-1470058869958-2a77ade41c02?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80');
+    background-image: url('assets/images/fondo.webp');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -555,6 +555,7 @@ img {
     background-color: var(--white);
     color: var(--primary-dark);
 }
+
 
 /* Footer */
 .footer {
