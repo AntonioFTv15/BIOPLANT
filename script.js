@@ -40,30 +40,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Scroll Animations (Intersection Observer)
-    const observerOptions = {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.1
-    };
+    // Mobile Menu Toggle
+    const menuToggle = document.getElementById('mobile-menu');
+    const navMenu = document.querySelector('.nav-menu');
 
-    const observer = new IntersectionObserver((entries, observer) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
-                observer.unobserve(entry.target); // Only animate once
-            }
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            menuToggle.classList.toggle('active');
         });
-    }, observerOptions);
+    }
 
-    const animatedElements = document.querySelectorAll('.animate-on-scroll');
-    animatedElements.forEach((el) => {
-        observer.observe(el);
-    });
+    // Close menu when clicking a link
+    document.querySelectorAll('.nav-link').forEach(n => n.addEventListener('click', () => {
+        navMenu.classList.remove('active');
+        menuToggle.classList.remove('active');
+    }));
 
-    // Navbar scroll effect
-    const navbar = document.querySelector('.navbar');
+    // Navbar Scroll Effect
     window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
         if (window.scrollY > 50) {
             navbar.classList.add('scrolled');
         } else {
@@ -71,7 +67,125 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Pagination Logic
+    // Scroll Animation
+    const scrollElements = document.querySelectorAll(".animate-on-scroll");
+
+    const elementInView = (el, dividend = 1) => {
+        const elementTop = el.getBoundingClientRect().top;
+        return (
+            elementTop <=
+            (window.innerHeight || document.documentElement.clientHeight) / dividend
+        );
+    };
+
+    const displayScrollElement = (element) => {
+        element.classList.add("is-visible");
+    };
+
+    const handleScrollAnimation = () => {
+        scrollElements.forEach((el) => {
+            if (elementInView(el, 1.25)) {
+                displayScrollElement(el);
+            }
+        })
+    }
+
+    window.addEventListener("scroll", () => {
+        handleScrollAnimation();
+    });
+
+    // Initial check
+    handleScrollAnimation();
+
+    // --- Product Modal Logic ---
+    function initProductModal() {
+        // Check if modal already exists
+        if (document.getElementById('product-modal')) return;
+
+        // Create Modal HTML
+        const modalHTML = `
+            <div id="product-modal" class="modal-overlay">
+                <div class="modal-content">
+                    <div class="modal-close">&times;</div>
+                    <div class="modal-img-container">
+                        <img id="modal-img" src="" alt="Product Image">
+                    </div>
+                    <div class="modal-info">
+                        <h2 id="modal-title" class="modal-title">Product Title</h2>
+                        <div id="modal-price" class="modal-price">S/0.00</div>
+                        <p id="modal-desc" class="modal-desc">Product description goes here.</p>
+                        <a id="modal-btn" href="#" class="btn-whatsapp" target="_blank">
+                            <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        const modal = document.getElementById('product-modal');
+        const closeBtn = modal.querySelector('.modal-close');
+        const modalImg = document.getElementById('modal-img');
+        const modalTitle = document.getElementById('modal-title');
+        const modalPrice = document.getElementById('modal-price');
+        const modalDesc = document.getElementById('modal-desc');
+        const modalBtn = document.getElementById('modal-btn');
+
+        // Close Modal Function
+        const closeModal = () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Enable scroll
+        };
+
+        closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Add Click Event to Products
+        // We use delegation because of pagination (items might be hidden/shown)
+        // But pagination just toggles display, elements exist.
+        // However, for duplicated items, we might need to be careful.
+
+        // Better to attach to a parent or re-attach on pagination?
+        // Actually, since elements are not destroyed, just hidden, standard delegation on .product-grid works perfectly.
+
+        const productGrid = document.querySelector('.product-grid');
+        if (productGrid) {
+            productGrid.addEventListener('click', (e) => {
+                const card = e.target.closest('.product-card');
+
+                // Prevent opening if clicking on the buy button directly (optional, but good UX)
+                // If user clicks "Comprar", maybe they just want to go to WhatsApp immediately.
+                // Let's decide: if they click the button, let it go. If they click card/img/title, open modal.
+                if (e.target.closest('.btn-whatsapp')) return;
+
+                if (card) {
+                    // Extract Data
+                    const img = card.querySelector('.product-img img').src;
+                    const title = card.querySelector('.product-title').innerText;
+                    const price = card.querySelector('.product-price').innerText;
+                    const desc = card.querySelector('.product-desc').innerText;
+                    const link = card.querySelector('.btn-whatsapp').href;
+
+                    // Populate Modal
+                    modalImg.src = img;
+                    modalTitle.innerText = title;
+                    modalPrice.innerText = price;
+                    modalDesc.innerText = desc;
+                    modalBtn.href = link;
+
+                    // Open Modal
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden'; // Disable scroll
+                }
+            });
+        }
+    }
+
+
+    // --- Pagination Logic ---
     function initPagination() {
         const productGrid = document.querySelector('.product-grid');
         if (!productGrid) return;
@@ -80,13 +194,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const itemsPerPage = 6;
         const totalPages = Math.ceil(products.length / itemsPerPage);
 
-        // If we have 6 or fewer items, no need for pagination
         if (totalPages <= 1) return;
 
-        // Create pagination controls container
-        const paginationContainer = document.createElement('div');
-        paginationContainer.className = 'pagination-controls';
-        productGrid.parentNode.insertBefore(paginationContainer, productGrid.nextSibling);
+        // Check if controls already exist (to avoid duplicates if re-run)
+        let paginationContainer = document.querySelector('.pagination-controls');
+        if (!paginationContainer) {
+            paginationContainer = document.createElement('div');
+            paginationContainer.className = 'pagination-controls';
+            productGrid.parentNode.insertBefore(paginationContainer, productGrid.nextSibling);
+        }
 
         let currentPage = 1;
 
@@ -96,20 +212,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             products.forEach((product, index) => {
                 if (index >= start && index < end) {
-                    product.style.display = 'flex'; // Ensure flex for product cards
-                    // Trigger animation reflow if needed, or simply let CSS handle it
-                    setTimeout(() => product.classList.add('is-visible'), 100);
+                    product.style.display = 'flex';
+                    // Trigger animation reflow
+                    product.classList.remove('is-visible');
+                    void product.offsetWidth;
+                    product.classList.add('is-visible');
                 } else {
                     product.style.display = 'none';
-                    product.classList.remove('is-visible');
                 }
             });
 
             updateButtons();
 
-            // Scroll to top of grid when changing page
+            // Scroll to top of grid
             const container = document.querySelector('.section-padding');
-            if (container) {
+            if (container && page !== 1) { // Only scroll if not initial load
                 const headerOffset = 100;
                 const elementPosition = container.getBoundingClientRect().top;
                 const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
@@ -126,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Prev Button
             if (currentPage > 1) {
                 const prevBtn = document.createElement('button');
-                prevBtn.innerText = 'Anterior';
+                prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
                 prevBtn.className = 'btn-pagination';
                 prevBtn.onclick = () => {
                     currentPage--;
@@ -150,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Next Button
             if (currentPage < totalPages) {
                 const nextBtn = document.createElement('button');
-                nextBtn.innerText = 'Siguiente';
+                nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
                 nextBtn.className = 'btn-pagination';
                 nextBtn.onclick = () => {
                     currentPage++;
@@ -162,7 +279,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Initialize
         showPage(1);
+
+        // Initialize Modal logic also
+        initProductModal();
     }
 
+    // Run on load
     initPagination();
 });
