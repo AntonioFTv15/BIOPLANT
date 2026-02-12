@@ -40,23 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Mobile Menu Toggle
-    const menuToggle = document.getElementById('mobile-menu');
-    const navMenu = document.querySelector('.nav-menu');
-
-    if (menuToggle) {
-        menuToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-            menuToggle.classList.toggle('active');
-        });
-    }
-
-    // Close menu when clicking a link
-    document.querySelectorAll('.nav-link').forEach(n => n.addEventListener('click', () => {
-        navMenu.classList.remove('active');
-        menuToggle.classList.remove('active');
-    }));
-
     // Navbar Scroll Effect
     window.addEventListener('scroll', () => {
         const navbar = document.querySelector('.navbar');
@@ -280,10 +263,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Initialize
         showPage(1);
 
-        // Initialize Modal logic also
-        initProductModal();
+        // Initialize
+        showPage(1);
     }
 
     // Run on load
     initPagination();
+    initProductModal(); // Initialize separately to ensure it runs even if pagination is skipped
 });
