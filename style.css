@@ -730,31 +730,54 @@ img {
 }
 
 /* Catalog Specific Styles */
+/* Catalog Specific Styles */
 .catalog-header {
-    background-color: var(--primary-dark);
+    background: linear-gradient(135deg, #1a2a1a 0%, #2e5c31 100%);
     color: var(--white);
-    padding: 120px 0 60px;
+    padding: 140px 0 80px;
     text-align: center;
     margin-top: 0;
-    /* Reset */
-    padding-top: 150px;
-    /* Account for navbar */
+    position: relative;
+    clip-path: ellipse(150% 100% at 50% 0%);
 }
 
 .catalog-header h1 {
     color: var(--white);
-    font-size: 3rem;
+    font-size: 3.5rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 .breadcrumb {
-    margin-top: 10px;
-    font-size: 0.9rem;
-    opacity: 0.8;
+    margin-top: 15px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    display: inline-block;
+    padding: 8px 25px;
+    border-radius: 50px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .breadcrumb a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.breadcrumb a:hover {
     color: var(--white);
     text-decoration: underline;
+}
+
+.breadcrumb span {
+    color: var(--white);
+    font-weight: 600;
+    opacity: 1;
 }
 
 .product-grid {
